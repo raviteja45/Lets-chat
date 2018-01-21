@@ -12,6 +12,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.XMPPException;
@@ -33,7 +43,7 @@ public class Installation extends AppCompatActivity implements ConnectionListene
 
     EditText name, phonenumber;
     Button done;
-    private final Thread thread = null;
+    ObjectMapper objMapper = new ObjectMapper();
 
     @Override
     public void onNetworkConnectionChanged(boolean isConnected) {
@@ -54,6 +64,49 @@ public class Installation extends AppCompatActivity implements ConnectionListene
             e.printStackTrace();
         }
     }
+
+    public void insertDetails() {
+
+        StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.0.19:2015/Services/test/rest/insertregistrationdetails",
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        /*Intent intent = new Intent(MainActivity.this, RetrieveMainDetails.class);
+                        MainActivity.this.finish();
+                        MainActivity.this.startActivity(intent);*/
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        //Toast.makeText(MainActivity.this,error.toString(),Toast.LENGTH_LONG).show();
+                    }
+                }) {
+
+            @Override
+            public byte[] getBody() {
+                RegistrationBean res = new RegistrationBean();
+                res.setUserName(name.getText().toString());
+                res.setPhoneNumber(phonenumber.getText().toString());
+                String JSon = null;
+                try {
+                    JSon = objMapper.writeValueAsString(res);
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return JSon.getBytes();
+            }
+
+        };
+
+        RequestQueue rQueue = Volley.newRequestQueue(Installation.this);
+        request.setRetryPolicy(new DefaultRetryPolicy(0, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        rQueue.add(request);
+
+    }
+
 
     private void processConnection() {
                 try {
@@ -121,6 +174,7 @@ public class Installation extends AppCompatActivity implements ConnectionListene
                                 } catch (InterruptedException e) {
                                     e.printStackTrace();
                                 }
+                                insertDetails();
                                 Intent intent = new Intent(view.getContext(), MainActivity.class);
                                 Installation.this.finish();
                                 view.getContext().startActivity(intent);
