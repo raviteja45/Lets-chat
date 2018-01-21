@@ -50,7 +50,6 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
         Cursor cursor = db1.rawQuery(selectQuery, null);
         if (cursor.moveToFirst()) {
             do {
-                String result;
                 MessageHolder bean = new MessageHolder();
                 bean.setOwner(cursor.getString(0));
                 bean.setMessage(cursor.getString(1));
@@ -76,7 +75,9 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
     public boolean insertRecords(MessageHolder messageHolder){
 
+        String CREATE_CONTACTS_TABLE = "create table if not exists UserRecords(owner text, message text, dateTime text, imageUrl text,withWhom text)";
         SQLiteDatabase dbInsert = this.getWritableDatabase();
+        dbInsert.execSQL(CREATE_CONTACTS_TABLE);
         ContentValues values = new ContentValues();
         values.put("owner", messageHolder.getOwner());
         values.put("message", messageHolder.getMessage());

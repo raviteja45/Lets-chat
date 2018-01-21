@@ -27,6 +27,14 @@
         android:layout_alignParentEnd="true"
         android:id="@+id/send" />
 
+    <Button
+        android:text="click"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@+id/send"
+        android:layout_toStartOf="@+id/send"
+        android:id="@+id/click" />
+
     <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
