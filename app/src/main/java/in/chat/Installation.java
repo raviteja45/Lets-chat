@@ -1,10 +1,16 @@
 package in.chat;
 
+import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.view.View;
@@ -41,39 +47,91 @@ import static in.chat.ChatUtil.connection;
 
 public class Installation extends AppCompatActivity implements ConnectionListener {
 
-    EditText name, phonenumber;
+    EditText name, phonenumber,email;
     Button done;
     ObjectMapper objMapper = new ObjectMapper();
-
+     ProgressDialog create = null;
     @Override
     public void onNetworkConnectionChanged(boolean isConnected) {
 
     }
 
-    private void getInstallationDetails() {
-        File file = new File(Environment.getExternalStorageDirectory().getPath() + "/letschat");
-        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(this.TELEPHONY_SERVICE);
-        file.mkdir();
-        try {
-            FileWriter fileWriter = new FileWriter(new File(file, "letschat"));
-            fileWriter.append(name.getText());
-            fileWriter.append("-" + phonenumber.getText() + "-" + telephonyManager.getDeviceId());
-            fileWriter.flush();
-            fileWriter.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+    private void requestForSpecificPermission() {
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_PHONE_STATE}, 101);
+    }
+    private boolean checkPermission() {
+        int result = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (result == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        } else {
+            return false;
         }
     }
+    private boolean getInstallationDetails() {
+        boolean result = true;
+        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1)
+        {
+            if (!checkPermission()) {
+                requestForSpecificPermission();
+                File file = new File(Environment.getExternalStorageDirectory().getPath() + "/letschat");
+                TelephonyManager telephonyManager = (TelephonyManager) getSystemService(this.TELEPHONY_SERVICE);
+                file.mkdir();
+                try {
+                    FileWriter fileWriter = new FileWriter(new File(file, "letschat"));
+                    fileWriter.append(name.getText());
+                    fileWriter.append("-" + phonenumber.getText() + "-" + telephonyManager.getDeviceId());
+                    fileWriter.flush();
+                    fileWriter.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    result = false;
+                    create.dismiss();
+                }
+            }
+        }
+        else{
+            File file = new File(Environment.getExternalStorageDirectory().getPath() + "/letschat");
+            TelephonyManager telephonyManager = (TelephonyManager) getSystemService(this.TELEPHONY_SERVICE);
+            file.mkdir();
+            try {
+                FileWriter fileWriter = new FileWriter(new File(file, "letschat"));
+                fileWriter.append(name.getText());
+                fileWriter.append("-" + phonenumber.getText() + "-" + telephonyManager.getDeviceId());
+                fileWriter.flush();
+                fileWriter.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+                result = false;
+                create.dismiss();
+            }
+        }
 
-    public void insertDetails() {
+        return result;
+    }
 
-        StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.0.19:2015/Services/test/rest/insertregistrationdetails",
+    public void insertDetails(final View view) {
+
+        StringRequest request = new StringRequest(Request.Method.POST, "http://192.184.0.54:2015/letschat/letschat/rest/insertregistrationdetails",
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        /*Intent intent = new Intent(MainActivity.this, RetrieveMainDetails.class);
-                        MainActivity.this.finish();
-                        MainActivity.this.startActivity(intent);*/
+                        System.out.println("Response is "+response);
+                        if("inserted".equalsIgnoreCase(response)){
+                            Thread t1 = new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    processConnection(view);
+                                }
+                            });
+                            t1.start();
+                            try {
+                                t1.join();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            create.dismiss();
+                        }
+
                     }
                 },
                 new Response.ErrorListener() {
@@ -88,6 +146,8 @@ public class Installation extends AppCompatActivity implements ConnectionListene
                 RegistrationBean res = new RegistrationBean();
                 res.setUserName(name.getText().toString());
                 res.setPhoneNumber(phonenumber.getText().toString());
+                res.setEmailAddress(email.getText().toString());
+                res.setRelations(phonenumber.getText().toString());
                 String JSon = null;
                 try {
                     JSon = objMapper.writeValueAsString(res);
@@ -108,7 +168,7 @@ public class Installation extends AppCompatActivity implements ConnectionListene
     }
 
 
-    private void processConnection() {
+    private void processConnection(View view) {
                 try {
 
                     XMPPTCPConnectionConfiguration.Builder builder1 = XMPPTCPConnectionConfiguration.builder();
@@ -138,6 +198,12 @@ public class Installation extends AppCompatActivity implements ConnectionListene
                 } catch (SmackException | XMPPException | IOException e) {
                     e.printStackTrace();
                 }
+
+        create.dismiss();
+        Intent intent = new Intent(view.getContext(), Friendfinder.class);
+        Installation.this.finish();
+        view.getContext().startActivity(intent);
+
     }
 
     @Override
@@ -151,33 +217,40 @@ public class Installation extends AppCompatActivity implements ConnectionListene
                 setContentView(R.layout.installation);
                 name = (EditText) findViewById(R.id.name);
                 phonenumber = (EditText) findViewById(R.id.phonenumber);
+                email = (EditText)findViewById(R.id.email);
                 done = (Button) findViewById(R.id.finish);
                 done.setOnClickListener(new View.OnClickListener() {
                     @Override
-                    public void onClick(View view) {
+                    public void onClick(final View view) {
 
+                        create = ProgressDialog.show(Installation.this, "Relax... We are Processing", "", false, false);
                         if(con.getActiveNetworkInfo() == null){
+                            create.dismiss();
                             Toast.makeText(Installation.this, "Hmmm...Check your Internet Connection...", Toast.LENGTH_LONG).show();
                         }
+
                         else{
-                            if (!name.getText().toString().isEmpty() && !phonenumber.getText().toString().isEmpty()) {
-                                getInstallationDetails();
-                                Thread t1 = new Thread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        processConnection();
+                            if (!name.getText().toString().isEmpty() && !phonenumber.getText().toString().isEmpty()&&!email.getText().toString().isEmpty()) {
+                                boolean result = getInstallationDetails();
+                                if(result){
+                                    Thread t2 = new Thread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            insertDetails(view);
+                                        }
+                                    });
+                                    t2.start();
+                                    try {
+                                        t2.join();
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
                                     }
-                                });
-                                t1.start();
-                                try {
-                                    t1.join();
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
                                 }
-                                insertDetails();
-                                Intent intent = new Intent(view.getContext(), MainActivity.class);
-                                Installation.this.finish();
-                                view.getContext().startActivity(intent);
+                                else{
+                                    Toast.makeText(Installation.this, "Error while creating file", Toast.LENGTH_LONG).show();
+                                }
+
+
                             } else {
                                 Toast.makeText(Installation.this, "Please Enter all the fields", Toast.LENGTH_LONG).show();
                             }
@@ -187,7 +260,7 @@ public class Installation extends AppCompatActivity implements ConnectionListene
                 });
 
             } else {
-                Intent intent = new Intent(this, MainActivity.class);
+                Intent intent = new Intent(this, Friendfinder.class);
                 Installation.this.finish();
                 this.startActivity(intent);
             }

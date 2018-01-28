@@ -6,7 +6,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="in.bootcamp.MainActivity" >
+    tools:context="in.chat.Installation" >
 
     <EditText
         android:id="@+id/phonenumber"
@@ -42,14 +42,16 @@
         android:layout_marginRight="14dp"
         android:text="Done" />
 
-    <Button
-        android:text="Profile pic"
+    <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:inputType="textEmailAddress"
+        android:ems="10"
+        android:hint="Email"
         android:layout_below="@+id/name"
         android:layout_alignLeft="@+id/name"
         android:layout_alignStart="@+id/name"
-        android:layout_marginTop="14dp"
-        android:id="@+id/profilepic" />
+        android:id="@+id/email" />
+
 
 </RelativeLayout>
