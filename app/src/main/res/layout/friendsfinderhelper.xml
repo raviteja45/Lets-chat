@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+    <TableRow>
+        <TextView
+            android:id="@+id/txt1"
+            android:text = "Hello"
+            android:layout_width="100dp"
+            android:layout_height="100dp"/>
+        <TextView
+            android:id="@+id/txt2"
+            android:text = "world"
+            android:layout_width="wrap_content"
+            android:layout_height="100dp" />
+        <Button
+            android:id="@+id/bt1"
+            android:text = "clcik"
+            android:layout_width="65dp"
+            android:layout_height="50dp" />
+    </TableRow>
+</TableLayout>
+

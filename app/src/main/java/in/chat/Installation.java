@@ -111,7 +111,7 @@ public class Installation extends AppCompatActivity implements ConnectionListene
 
     public void insertDetails(final View view) {
 
-        StringRequest request = new StringRequest(Request.Method.POST, "http://192.184.0.54:2015/letschat/letschat/rest/insertregistrationdetails",
+        StringRequest request = new StringRequest(Request.Method.POST, "http://192.188.0.54:2015/letschat/letschat/rest/insertregistrationdetails",
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
