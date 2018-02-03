@@ -51,7 +51,7 @@ public class Friendsfinderhelper extends BaseAdapter {
     public View getView(final int position, View view, ViewGroup parent) {
         LayoutInflater inflater = context.getLayoutInflater();
         View viewItem= inflater.inflate(R.layout.friendsfinderhelper, null, true);
-        if(!stringValue.get(position).getPhoneNumber().equalsIgnoreCase(admin)){
+        if(stringValue!=null&&admin!=null&&stringValue.get(position).getPhoneNumber()!=null&&!stringValue.get(position).getPhoneNumber().equalsIgnoreCase(admin)){
             TextView txt1 = (TextView) viewItem.findViewById(R.id.txt1);
             TextView txt2 = (TextView) viewItem.findViewById(R.id.txt2);
             Button bt1 = (Button)viewItem.findViewById(R.id.bt1);

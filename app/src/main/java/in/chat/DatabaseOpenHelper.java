@@ -14,6 +14,8 @@ import java.util.ArrayList;
 
 public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
+    static String result = "abc";
+
     DatabaseOpenHelper(Context context){
         super(context,"test",null,1);
     }
@@ -73,25 +75,33 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
 
     }
 
-    public boolean insertRecords(MessageHolder messageHolder){
+    public boolean insertRecords(MessageHolder messageHolder,String img){
 
-        String CREATE_CONTACTS_TABLE = "create table if not exists UserRecords(owner text, message text, dateTime text, imageUrl text,withWhom text)";
-        SQLiteDatabase dbInsert = this.getWritableDatabase();
-        dbInsert.execSQL(CREATE_CONTACTS_TABLE);
-        ContentValues values = new ContentValues();
-        values.put("owner", messageHolder.getOwner());
-        values.put("message", messageHolder.getMessage());
-        values.put("dateTime", messageHolder.getDateTime());
-        values.put("imageUrl", messageHolder.getImageUrl());
-        values.put("withWhom", messageHolder.getWithWhom());
-        long i =  dbInsert.insert("UserRecords",null,values);
-        dbInsert.close();
-        if(i!=-1){
-            return true;
-        }
-        else {
-            return false;
-        }
+        //if((img!=null&&!img.equalsIgnoreCase(result))||"adminInsert".equalsIgnoreCase(img)){
+            String CREATE_CONTACTS_TABLE = "create table if not exists UserRecords(owner text, message text, dateTime text, imageUrl text,withWhom text)";
+            SQLiteDatabase dbInsert = this.getWritableDatabase();
+            dbInsert.execSQL(CREATE_CONTACTS_TABLE);
+            ContentValues values = new ContentValues();
+            values.put("owner", messageHolder.getOwner());
+            values.put("message", messageHolder.getMessage());
+            values.put("dateTime", messageHolder.getDateTime());
+            values.put("imageUrl", messageHolder.getImageUrl());
+            values.put("withWhom", messageHolder.getWithWhom());
+            System.out.println("Called from"+img);
+            long i =  dbInsert.insert("UserRecords",null,values);
+            if(!img.equalsIgnoreCase("adminInsert")){
+                result = img;
+            }
+            dbInsert.close();
+            if(i!=-1){
+                return true;
+            }
+            else {
+                return false;
+            }
+        //}
+
+        //return false;
     }
 
 }

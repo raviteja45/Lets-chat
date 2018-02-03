@@ -111,7 +111,7 @@ public class Installation extends AppCompatActivity implements ConnectionListene
 
     public void insertDetails(final View view) {
 
-        StringRequest request = new StringRequest(Request.Method.POST, "http://192.188.0.54:2015/letschat/letschat/rest/insertregistrationdetails",
+        StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.0.19:2015/letschat/letschat/rest/insertregistrationdetails",
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
@@ -151,6 +151,7 @@ public class Installation extends AppCompatActivity implements ConnectionListene
                 String JSon = null;
                 try {
                     JSon = objMapper.writeValueAsString(res);
+                    System.out.println("Json s "+JSon);
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
                 } catch (IOException e) {

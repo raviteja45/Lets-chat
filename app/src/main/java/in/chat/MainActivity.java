@@ -219,7 +219,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionListene
             bean.setOwner(fromPerson[0]);
             bean.setWithWhom(fromPerson[0]);
             bean.setMessage(res);
-            boolean result = dbHelper.insertRecords(bean);
+            boolean result = dbHelper.insertRecords(bean,"MainActivity");
             if (result) {
                 System.out.println("Successfully Inserted into DB from MainActivity");
             } else {

@@ -54,8 +54,8 @@ import static in.chat.ChatUtil.connection;
 public class SendMessage extends Activity implements ConnectionListener {
 
     static String userType;
-    ArrayList<MessageHolder> arrayList;
-    AdapterHelper adapter;
+    static ArrayList<MessageHolder> arrayList;
+    static AdapterHelper adapter;
     EditText typeMessage;
     Button send, click;
     ListView lv;
@@ -76,7 +76,7 @@ public class SendMessage extends Activity implements ConnectionListener {
         adapter = new AdapterHelper(SendMessage.this, arrayList);
         lv.setAdapter(adapter);
         retrieveHistory();
-        receiveMessage();
+        //receiveMessage();
         send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -167,7 +167,7 @@ public class SendMessage extends Activity implements ConnectionListener {
             messageHolderDB.setOwner(fromPerson[0]);
             messageHolderDB.setWithWhom(fromPerson[0]);
             messageHolderDB.setMessage(res);
-            boolean result = databaseOpenHelper.insertRecords(messageHolderDB);
+            boolean result = databaseOpenHelper.insertRecords(messageHolderDB,id);
             if (result) {
                 System.out.println("Successfully Inserted into DB from SendMessage");
             } else {
@@ -203,7 +203,7 @@ public class SendMessage extends Activity implements ConnectionListener {
         bean.setOwner("phone");
         bean.setWithWhom(userType);
         bean.setMessage(text);
-        boolean result = dbHelper.insertRecords(bean);
+        boolean result = dbHelper.insertRecords(bean,"adminInsert");
         if (result) {
             Toast.makeText(this, "record inserted", Toast.LENGTH_SHORT).show();
         }
@@ -314,7 +314,7 @@ public class SendMessage extends Activity implements ConnectionListener {
                     try {
                         XMPPTCPConnectionConfiguration.Builder builder = XMPPTCPConnectionConfiguration.builder();
                         builder.setSecurityMode(ConnectionConfiguration.SecurityMode.disabled);
-                        builder.setUsernameAndPassword("phone", "admin");
+                        builder.setUsernameAndPassword(ChatUtil.getFileDetails().split("-")[1], "admin");
                         builder.setSendPresence(true);
                         builder.setServiceName("192.168.0.19");
                         builder.setHost("192.168.0.19");

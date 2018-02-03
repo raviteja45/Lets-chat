@@ -90,7 +90,7 @@ public class Friendfinder extends AppCompatActivity implements ConnectionListene
     private void suggestFriends() {
 
         RegistrationBean res = null;
-            StringRequest request = new StringRequest(Request.Method.POST, "http://192.184.0.54:2015/letschat/letschat/rest/retrievemaincontent",
+            StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.0.19:2015/letschat/letschat/rest/retrievemaincontent",
                     new Response.Listener<String>() {
                         @Override
                         public void onResponse(String response) {
@@ -191,7 +191,17 @@ public class Friendfinder extends AppCompatActivity implements ConnectionListene
             bean.setOwner(fromPerson[0]);
             bean.setWithWhom(fromPerson[0]);
             bean.setMessage(res);
-            boolean result = dbHelper.insertRecords(bean);
+            boolean result = dbHelper.insertRecords(bean,id);
+            if(SendMessage.userType.equalsIgnoreCase(fromPerson[0])){
+                SendMessage.arrayList.add(bean);
+                this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        SendMessage.adapter.notifyDataSetChanged();
+                    }
+                });
+            }
+
             if (result) {
                 System.out.println("Successfully Inserted into DB from MainActivity");
             } else {
