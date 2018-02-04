@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -27,16 +26,12 @@ import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jivesoftware.smackx.filetransfer.FileTransferManager;
-import org.jivesoftware.smackx.filetransfer.OutgoingFileTransfer;
-import org.jxmpp.util.XmppStringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -46,6 +41,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import static in.chat.ChatUtil.connection;
+
+//import o
 
 /**
  * Created by Ravi on 17-12-2017.
@@ -230,31 +227,16 @@ public class SendMessage extends Activity implements ConnectionListener {
         }
     }
 
+
     private void sendMessage1(EditText editText, final String userType) {
 
-       /* Intent intent = new Intent(Intent.ACTION_PICK);
-        intent.setType("image*//*");
-        startActivityForResult(intent, 2);*/
-
-        // if(uri!=null){
-           /* Bitmap largeIcon=null;
-            try {
-                largeIcon = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-            largeIcon.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-            String path = MediaStore.Images.Media.insertImage(getContentResolver(), largeIcon, "Title", null);
-            Uri sdf = Uri.parse(path);*/
-
-        if (manager == null) {
-            manager = FileTransferManager.getInstanceFor(connection);
-
-        }
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("image/*");
+        startActivityForResult(intent, 2);
 
 
-        OutgoingFileTransfer transfer = manager.createOutgoingFileTransfer(XmppStringUtils.completeJidFrom(userType, "192.168.0.19", "Test"));
+
+       /* OutgoingFileTransfer transfer = manager.createOutgoingFileTransfer(XmppStringUtils.completeJidFrom(userType, "192.168.0.19", "Test"));
 
         File file = new File(Environment.getExternalStorageDirectory().getPath() + "/letschat");
         file.mkdir();
@@ -270,7 +252,7 @@ public class SendMessage extends Activity implements ConnectionListener {
             }
         } catch (SmackException | IOException e) {
             e.printStackTrace();
-        }
+        }*/
         // }
        /* Presence presence = new Presence(Presence.Type.available);
         presence.setStatus("Available");

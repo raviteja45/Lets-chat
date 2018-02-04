@@ -161,6 +161,53 @@ public class Friendfinder extends AppCompatActivity implements ConnectionListene
     }
     public void onNetworkConnectionChanged(boolean isConnected) {
 
+        if (isConnected) {
+            new Thread() {
+
+                public void run() {
+                    try {
+                        XMPPTCPConnectionConfiguration.Builder builder = XMPPTCPConnectionConfiguration.builder();
+                        builder.setSecurityMode(ConnectionConfiguration.SecurityMode.disabled);
+                        builder.setUsernameAndPassword(ChatUtil.getFileDetails().split("-")[1], "admin");
+                        builder.setSendPresence(true);
+                        builder.setServiceName("192.168.0.19");
+                        builder.setHost("192.168.0.19");
+                        builder.setResource("Test");
+                        builder.setDebuggerEnabled(true);
+                        Presence presence = new Presence(Presence.Type.available);
+                        presence.setStatus("Available");
+                        connection = new XMPPTCPConnection(builder.build());
+                        connection.connect();
+                        connection.login();
+                        Presence presence123 = new Presence(Presence.Type.available);
+                        presence123.setStatus("Available");
+                        try {
+                            connection.sendStanza(presence123);
+                        } catch (SmackException.NotConnectedException e) {
+                            e.printStackTrace();
+                        }
+                        StanzaFilter filter = new AndFilter(new StanzaTypeFilter(Message.class));
+                        PacketListener myListener = new PacketListener() {
+                            public void processPacket(Stanza stanza) {
+                                getMessage(stanza);
+                            }
+                        };
+                        connection.addPacketListener(myListener, filter);
+                        try {
+                            connection.sendStanza(presence);
+                        } catch (SmackException.NotConnectedException e) {
+                            e.printStackTrace();
+                        }
+
+                    } catch (SmackException | XMPPException | IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }.start();
+
+        }
+
     }
 
     protected void getMessage(Stanza stanza) {
