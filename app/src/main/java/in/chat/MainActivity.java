@@ -137,8 +137,8 @@ public class MainActivity extends AppCompatActivity implements ConnectionListene
                     builder.setSecurityMode(ConnectionConfiguration.SecurityMode.disabled);
                     System.out.println("USer NAME is "+userInfo.split("-")[1]);
                     builder.setUsernameAndPassword(userInfo.split("-")[1], "admin");
-                    builder.setServiceName(ChatUtil.HOST_NAME);
-                    builder.setHost(ChatUtil.HOST_NAME);
+                    builder.setServiceName(Connectionfactory.HOST_NAME);
+                    builder.setHost(Connectionfactory.HOST_NAME);
                     builder.setResource("Test");
                     builder.setDebuggerEnabled(true);
                     connection = new XMPPTCPConnection(builder.build());

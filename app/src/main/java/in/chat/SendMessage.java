@@ -2,8 +2,10 @@ package in.chat;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -26,12 +28,14 @@ import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jivesoftware.smackx.filetransfer.FileTransferManager;
+import org.jivesoftware.smackx.filetransfer.OutgoingFileTransfer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -41,8 +45,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import static in.chat.ChatUtil.connection;
-
-//import o
 
 /**
  * Created by Ravi on 17-12-2017.
@@ -64,7 +66,6 @@ public class SendMessage extends Activity implements ConnectionListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.sendmessage);
         userType = getIntent().getExtras().get("userType").toString();
-        System.out.println("On create user is " + userType);
         typeMessage = (EditText) findViewById(R.id.message);
         send = (Button) findViewById(R.id.send);
         click = (Button) findViewById(R.id.click);
@@ -73,7 +74,6 @@ public class SendMessage extends Activity implements ConnectionListener {
         adapter = new AdapterHelper(SendMessage.this, arrayList);
         lv.setAdapter(adapter);
         retrieveHistory();
-        //receiveMessage();
         send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -97,24 +97,6 @@ public class SendMessage extends Activity implements ConnectionListener {
         DetectNetWorkChange.getInstance().setConnectivityListener(this);
     }
 
-    protected void receiveMessage() {
-        Presence presence = new Presence(Presence.Type.available);
-        presence.setStatus("Available");
-        try {
-            connection.sendStanza(presence);
-        } catch (SmackException.NotConnectedException e) {
-            e.printStackTrace();
-        }
-        StanzaFilter filter = new AndFilter(new StanzaTypeFilter(Message.class));
-        PacketListener myListener = new PacketListener() {
-            public void processPacket(Stanza stanza) {
-                getMessage(stanza, userType);
-                System.out.println("On receive user is " + userType);
-
-            }
-        };
-        connection.addPacketListener(myListener, filter);
-    }
 
     protected void getMessage(Stanza stanza, String xyz) {
 
@@ -164,7 +146,7 @@ public class SendMessage extends Activity implements ConnectionListener {
             messageHolderDB.setOwner(fromPerson[0]);
             messageHolderDB.setWithWhom(fromPerson[0]);
             messageHolderDB.setMessage(res);
-            boolean result = databaseOpenHelper.insertRecords(messageHolderDB,id);
+            boolean result = databaseOpenHelper.insertRecords(messageHolderDB, id);
             if (result) {
                 System.out.println("Successfully Inserted into DB from SendMessage");
             } else {
@@ -200,7 +182,7 @@ public class SendMessage extends Activity implements ConnectionListener {
         bean.setOwner("phone");
         bean.setWithWhom(userType);
         bean.setMessage(text);
-        boolean result = dbHelper.insertRecords(bean,"adminInsert");
+        boolean result = dbHelper.insertRecords(bean, "adminInsert");
         if (result) {
             Toast.makeText(this, "record inserted", Toast.LENGTH_SHORT).show();
         }
@@ -223,6 +205,28 @@ public class SendMessage extends Activity implements ConnectionListener {
         if (requestCode == 2) {
             if (data != null) {
                 uri = data.getData();
+                Cursor cursor = null;
+                try {
+                    String[] proj = {MediaStore.Images.Media.DATA};
+                    cursor = this.getContentResolver().query(uri, proj, null, null, null);
+                    int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                    cursor.moveToFirst();
+                    String url = cursor.getString(column_index);
+                    FileTransferManager manager = FileTransferManager.getInstanceFor(connection);
+                    OutgoingFileTransfer transfer = manager.createOutgoingFileTransfer("" + "/Test");
+                    File file = new File(url);
+                    try {
+                        transfer.sendFile(file, "test_file");
+                    } catch (SmackException e) {
+                        e.printStackTrace();
+                    }
+                } finally {
+                    if (cursor != null) {
+                        cursor.close();
+                    }
+                }
+
+
             }
         }
     }
@@ -300,7 +304,7 @@ public class SendMessage extends Activity implements ConnectionListener {
                         builder.setSendPresence(true);
                         builder.setServiceName("192.168.0.19");
                         builder.setHost("192.168.0.19");
-                        builder.setResource("Test");
+                        builder.setResource(ChatUtil.RESOURCE);
                         builder.setDebuggerEnabled(true);
                         Presence presence = new Presence(Presence.Type.available);
                         presence.setStatus("Available");

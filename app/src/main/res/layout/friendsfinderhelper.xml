@@ -1,23 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
-    <TableRow>
-        <TextView
-            android:id="@+id/txt1"
-            android:text = "Hello"
-            android:layout_width="100dp"
-            android:layout_height="100dp"/>
-        <TextView
-            android:id="@+id/txt2"
-            android:text = "world"
-            android:layout_width="wrap_content"
-            android:layout_height="100dp" />
-        <Button
-            android:id="@+id/bt1"
-            android:text = "clcik"
-            android:layout_width="65dp"
-            android:layout_height="50dp" />
-    </TableRow>
-</TableLayout>
+    android:layout_height="wrap_content"
+    android:background="?android:attr/selectableItemBackground"
+    android:orientation="vertical">
 
+
+    <TextView
+        android:text="Raviteja"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/username"
+        android:textStyle="bold"
+        android:textSize="20dp"
+        android:layout_marginLeft="25dp" />
+
+    <ImageView android:id="@+id/my_posted_pic"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:layout_gravity="center"
+        android:maxHeight="550dp"
+        android:minHeight="250dp"
+        android:maxWidth="550dp"
+        android:minWidth="400dp"
+        android:scaleType="centerInside"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="120dp"
+        android:src="@drawable/mypic"/>
+
+    <Button
+        android:text="Friend"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/username"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="42dp"
+        android:id="@+id/friends" />
+
+</RelativeLayout>
+
+    <!--
+    <?xml version="1.0" encoding="utf-8"?>
+    <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+        <TableRow>
+            <TextView
+                android:id="@+id/txt1"
+                android:text = "Hello"
+                android:layout_width="100dp"
+                android:layout_height="100dp"/>
+            <TextView
+                android:id="@+id/txt2"
+                android:text = "world"
+                android:layout_width="wrap_content"
+                android:layout_height="100dp" />
+            <Button
+                android:id="@+id/bt1"
+                android:text = "clcik"
+                android:layout_width="65dp"
+                android:layout_height="50dp" />
+        </TableRow>
+    </TableLayout>
+
+    -->

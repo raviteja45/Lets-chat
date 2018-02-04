@@ -6,6 +6,6 @@ package in.chat;
 
 public interface ConnectionListener {
 
-        void onNetworkConnectionChanged(boolean isConnected);
+    void onNetworkConnectionChanged(boolean isConnected);
 
 }

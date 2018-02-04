@@ -45,10 +45,10 @@ public class AdapterHelper extends BaseAdapter {
 
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
-        MessageHolder message1 =  messageHolderList.get(i);
+        MessageHolder message1 = messageHolderList.get(i);
         String message = message1.getMessage();
-        if(view==null){
-            view = layoutInflater.inflate(R.layout.adapterhelper,null);
+        if (view == null) {
+            view = layoutInflater.inflate(R.layout.adapterhelper, null);
         }
         TextView messageText = (TextView) view.findViewById(R.id.messageText);
         messageText.setText(message);
@@ -56,11 +56,10 @@ public class AdapterHelper extends BaseAdapter {
                 .findViewById(R.id.lineLayout);
         LinearLayout main = (LinearLayout) view
                 .findViewById(R.id.lineLayoutParent);
-        if (message1.getOwner()!=null&&message1.getOwner().equalsIgnoreCase("phone")) {
+        if (message1.getOwner() != null && message1.getOwner().equalsIgnoreCase("phone")) {
             layout.setBackgroundResource(R.drawable.right);
             main.setGravity(Gravity.RIGHT);
-        }
-        else {
+        } else {
             layout.setBackgroundResource(R.drawable.left);
             main.setGravity(Gravity.LEFT);
         }

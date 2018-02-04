@@ -33,6 +33,7 @@
         <activity android:name=".SendMessage"></activity>
         <activity android:name=".MainActivity"></activity>
         <activity android:name=".Friendfinder"></activity>
+        <activity android:name=".Nointernet"></activity>
 
     </application>
 </manifest>

@@ -1,7 +1,6 @@
 package in.chat;
 
 import android.content.Context;
-import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Environment;
@@ -9,10 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -65,6 +61,7 @@ public class Friendfinder extends AppCompatActivity implements ConnectionListene
     ListView lv1;
     String userInfo;
     public static String idGlobal = "abc";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,78 +87,71 @@ public class Friendfinder extends AppCompatActivity implements ConnectionListene
     private void suggestFriends() {
 
         RegistrationBean res = null;
-            StringRequest request = new StringRequest(Request.Method.POST, "http://192.168.0.19:2015/letschat/letschat/rest/retrievemaincontent",
-                    new Response.Listener<String>() {
-                        @Override
-                        public void onResponse(String response) {
-                            System.out.println("Response is "+response);
-                            try {
-                                RegistrationBean[] res = objMapper.readValue(response,RegistrationBean[].class);
-                                System.out.println(res[0].getPhoneNumber());
-                                displayContent(res);
+        StringRequest request = new StringRequest(Request.Method.POST, Connectionfactory.RETRIEVE_FRIENDS_LIST,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+                            RegistrationBean[] res = objMapper.readValue(response, RegistrationBean[].class);
+                            displayContent(res);
 
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
-                    },
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            //Toast.makeText(MainActivity.this,error.toString(),Toast.LENGTH_LONG).show();
-                        }
-                    }) {
 
-                @Override
-                public byte[] getBody() {
-                    RegistrationBean res = new RegistrationBean();
-                    res.setUserName(userInfo.split("-")[0]);
-                    res.setPhoneNumber(userInfo.split("-")[1]);
-                    /*res.setUserName(name.getText().toString());
-                    res.setPhoneNumber(phonenumber.getText().toString());
-                    res.setEmailAddress(email.getText().toString());
-                    res.setRelations(phonenumber.getText().toString());*/
-                    String JSon = null;
-                    try {
-                        JSon = objMapper.writeValueAsString(res);
-                    } catch (JsonProcessingException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
-                    return JSon.getBytes();
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                    }
+                }) {
+
+            @Override
+            public byte[] getBody() {
+                RegistrationBean res = new RegistrationBean();
+                res.setUserName(userInfo.split("-")[0]);
+                res.setPhoneNumber(userInfo.split("-")[1]);
+                String JSon = null;
+                try {
+                    JSon = objMapper.writeValueAsString(res);
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
+                return JSon.getBytes();
+            }
 
-            };
+        };
 
-            RequestQueue rQueue = Volley.newRequestQueue(Friendfinder.this);
-            request.setRetryPolicy(new DefaultRetryPolicy(0, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-            rQueue.add(request);
+        RequestQueue rQueue = Volley.newRequestQueue(Friendfinder.this);
+        request.setRetryPolicy(new DefaultRetryPolicy(0, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        rQueue.add(request);
 
 
     }
-
 
 
     private void displayContent(RegistrationBean[] res) {
 
 
         final List<RegistrationBean> listArray = new LinkedList<>(Arrays.asList(res));
-        final Friendsfinderhelper fHelper = new Friendsfinderhelper(Friendfinder.this,listArray,userInfo.split("-")[1]);
+        final Friendsfinderhelper fHelper = new Friendsfinderhelper(Friendfinder.this, listArray, userInfo.split("-")[1]);
         lv1.setAdapter(fHelper);
         lv1.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
 
-
             }
         });
     }
+
     public void onNetworkConnectionChanged(boolean isConnected) {
 
         if (isConnected) {
+            suggestFriends();
             new Thread() {
 
                 public void run() {
@@ -170,8 +160,8 @@ public class Friendfinder extends AppCompatActivity implements ConnectionListene
                         builder.setSecurityMode(ConnectionConfiguration.SecurityMode.disabled);
                         builder.setUsernameAndPassword(ChatUtil.getFileDetails().split("-")[1], "admin");
                         builder.setSendPresence(true);
-                        builder.setServiceName("192.168.0.19");
-                        builder.setHost("192.168.0.19");
+                        builder.setServiceName(Connectionfactory.HOST_NAME);
+                        builder.setHost(Connectionfactory.HOST_NAME);
                         builder.setResource("Test");
                         builder.setDebuggerEnabled(true);
                         Presence presence = new Presence(Presence.Type.available);
@@ -238,8 +228,8 @@ public class Friendfinder extends AppCompatActivity implements ConnectionListene
             bean.setOwner(fromPerson[0]);
             bean.setWithWhom(fromPerson[0]);
             bean.setMessage(res);
-            boolean result = dbHelper.insertRecords(bean,id);
-            if(SendMessage.userType.equalsIgnoreCase(fromPerson[0])){
+            boolean result = dbHelper.insertRecords(bean, id);
+            if (SendMessage.userType.equalsIgnoreCase(fromPerson[0])) {
                 SendMessage.arrayList.add(bean);
                 this.runOnUiThread(new Runnable() {
                     @Override
@@ -257,6 +247,7 @@ public class Friendfinder extends AppCompatActivity implements ConnectionListene
         }
 
     }
+
     protected void receiveMessage() {
         Presence presence = new Presence(Presence.Type.available);
         presence.setStatus("Available");
@@ -283,11 +274,10 @@ public class Friendfinder extends AppCompatActivity implements ConnectionListene
                 try {
                     XMPPTCPConnectionConfiguration.Builder builder = XMPPTCPConnectionConfiguration.builder();
                     builder.setSecurityMode(ConnectionConfiguration.SecurityMode.disabled);
-                    System.out.println("USer NAME is "+userInfo.split("-")[1]);
-                    builder.setUsernameAndPassword(userInfo.split("-")[1], "admin");
-                    builder.setServiceName(ChatUtil.HOST_NAME);
-                    builder.setHost(ChatUtil.HOST_NAME);
-                    builder.setResource("Test");
+                    builder.setUsernameAndPassword(userInfo.split("-")[1], ChatUtil.USER_PASSWORD);
+                    builder.setServiceName(Connectionfactory.HOST_NAME);
+                    builder.setHost(Connectionfactory.HOST_NAME);
+                    builder.setResource(ChatUtil.RESOURCE);
                     builder.setDebuggerEnabled(true);
                     connection = new XMPPTCPConnection(builder.build());
                     connection.connect();
