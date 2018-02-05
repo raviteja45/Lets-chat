@@ -41,7 +41,9 @@ import org.xml.sax.SAXException;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -78,13 +80,14 @@ public class Friendfinder extends AppCompatActivity implements ConnectionListene
                     setContentView(R.layout.friendsfinder);
                     lv1 = (ListView) findViewById(R.id.list123);
                     processConnection();
-                    suggestFriends();
+                    getCurrentRelation();
                 }
             }
         }
     }
 
-    private void suggestFriends() {
+    private void suggestFriends(final String current) {
+
 
         RegistrationBean res = null;
         StringRequest request = new StringRequest(Request.Method.POST, Connectionfactory.RETRIEVE_FRIENDS_LIST,
@@ -92,8 +95,9 @@ public class Friendfinder extends AppCompatActivity implements ConnectionListene
                     @Override
                     public void onResponse(String response) {
                         try {
+
                             RegistrationBean[] res = objMapper.readValue(response, RegistrationBean[].class);
-                            displayContent(res);
+                            displayContent(res,current);
 
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -109,18 +113,18 @@ public class Friendfinder extends AppCompatActivity implements ConnectionListene
 
             @Override
             public byte[] getBody() {
-                RegistrationBean res = new RegistrationBean();
-                res.setUserName(userInfo.split("-")[0]);
-                res.setPhoneNumber(userInfo.split("-")[1]);
-                String JSon = null;
+                //RegistrationBean res = new RegistrationBean();
+               // res.setUserName(userInfo.split("-")[0]);
+                //res.setPhoneNumber(userInfo.split("-")[1]);
+                /*String JSon = null;
                 try {
                     JSon = objMapper.writeValueAsString(res);
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
                     e.printStackTrace();
-                }
-                return JSon.getBytes();
+                }*/
+                return userInfo.split("-")[1].getBytes();
             }
 
         };
@@ -133,11 +137,45 @@ public class Friendfinder extends AppCompatActivity implements ConnectionListene
     }
 
 
-    private void displayContent(RegistrationBean[] res) {
+    private void getCurrentRelation(){
+        StringRequest request = new StringRequest(Request.Method.POST, Connectionfactory.CURRENT_RELATION_LIST,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
 
+                        suggestFriends(response);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                    }
+                }) {
 
+            @Override
+            public byte[] getBody() {
+                return userInfo.split("-")[1].getBytes();
+            }
+
+        };
+
+        RequestQueue rQueue = Volley.newRequestQueue(Friendfinder.this);
+        request.setRetryPolicy(new DefaultRetryPolicy(0, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        rQueue.add(request);
+    }
+    private void displayContent(RegistrationBean[] res,String current) {
+        String[] tempFriends = current.split(",");
+
+        List<RegistrationBean>tempList = new ArrayList<>();
         final List<RegistrationBean> listArray = new LinkedList<>(Arrays.asList(res));
-        final Friendsfinderhelper fHelper = new Friendsfinderhelper(Friendfinder.this, listArray, userInfo.split("-")[1]);
+        for(RegistrationBean temp:listArray){
+            if(!Arrays.asList(tempFriends).contains(temp.getPhoneNumber())){
+                tempList.add(temp);
+            }
+        }
+
+
+        final Friendsfinderhelper fHelper = new Friendsfinderhelper(Friendfinder.this, tempList, userInfo.split("-")[1]);
         lv1.setAdapter(fHelper);
         lv1.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -151,7 +189,7 @@ public class Friendfinder extends AppCompatActivity implements ConnectionListene
     public void onNetworkConnectionChanged(boolean isConnected) {
 
         if (isConnected) {
-            suggestFriends();
+            getCurrentRelation();
             new Thread() {
 
                 public void run() {
