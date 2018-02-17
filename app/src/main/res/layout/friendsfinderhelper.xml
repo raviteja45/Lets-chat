@@ -17,7 +17,7 @@
         android:textSize="20dp"
         android:layout_marginLeft="25dp" />
 
-    <ImageView android:id="@+id/my_posted_pic"
+    <!--<ImageView android:id="@+id/my_posted_pic"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:adjustViewBounds="true"
@@ -29,7 +29,7 @@
         android:scaleType="centerInside"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="120dp"
-        android:src="@drawable/mypic"/>
+        android:src="@drawable/mypic"/>-->
 
     <Button
         android:text="Friend"

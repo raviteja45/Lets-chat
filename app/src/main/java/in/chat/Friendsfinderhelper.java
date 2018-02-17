@@ -68,6 +68,7 @@ public class Friendsfinderhelper extends BaseAdapter {
                     final DatabaseOpenHelper dbHelper = new DatabaseOpenHelper(view.getContext());
                     dbHelper.userChatTracker(stringValue.get(position).getPhoneNumber(),stringValue.get(position).getUserName());
                     updateFriedRelation(view,stringValue.get(position).getPhoneNumber());
+                    updateLocalDbwithFriendName(stringValue.get(position).getPhoneNumber(),view);
                     bt1.setEnabled(false);
                     /*Intent intent = new Intent(view.getContext(), SendMessage.class);
                     intent.putExtra("userType", stringValue.get(position).getPhoneNumber());
@@ -77,6 +78,12 @@ public class Friendsfinderhelper extends BaseAdapter {
         }
 
         return viewItem;
+    }
+
+    private void updateLocalDbwithFriendName(String phoneNumber,View view) {
+        final DatabaseOpenHelper dbHelper = new DatabaseOpenHelper(view.getContext());
+        //dbHelper.updateLocalDbWithFriendName(phoneNumber);
+
     }
 
     private void updateFriedRelation(View view, final String relation) {

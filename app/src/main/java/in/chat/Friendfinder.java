@@ -1,6 +1,7 @@
 package in.chat;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Environment;
@@ -8,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -17,7 +19,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.jivesoftware.smack.ConnectionConfiguration;
@@ -43,7 +44,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -62,11 +62,13 @@ public class Friendfinder extends AppCompatActivity implements ConnectionListene
     ObjectMapper objMapper = new ObjectMapper();
     ListView lv1;
     String userInfo;
+    Button mychats;
     public static String idGlobal = "abc";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
 
         ConnectivityManager con = (ConnectivityManager) Friendfinder.this.getApplicationContext()
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -79,11 +81,22 @@ public class Friendfinder extends AppCompatActivity implements ConnectionListene
                 if (telephonyManager.getDeviceId().equals(userInfo.split("-")[2])) {
                     setContentView(R.layout.friendsfinder);
                     lv1 = (ListView) findViewById(R.id.list123);
+                    mychats = (Button)findViewById(R.id.mychats);
+                    mychats.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            Intent intent = new Intent(getApplicationContext(), Mychats.class);
+                            startActivity(intent);
+
+                        }
+                    });
                     processConnection();
                     getCurrentRelation();
                 }
             }
         }
+
+
     }
 
     private void suggestFriends(final String current) {

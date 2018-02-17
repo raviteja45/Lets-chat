@@ -7,6 +7,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import java.util.ArrayList;
+import java.util.List;
+
+import static android.R.id.list;
 
 /**
  * Created by Ravi on 17-12-2017.
@@ -68,6 +71,35 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
         } else {
             return false;
         }
+    }
+
+    /*public boolean updateLocalDbWithFriendName(String phoneNumber) {
+        String CREATE_CONTACTS_TABLE = "create table if not exists Friendslist(phonenumber text)";
+        SQLiteDatabase dbInsert = this.getWritableDatabase();
+        dbInsert.execSQL(CREATE_CONTACTS_TABLE);
+        ContentValues values = new ContentValues();
+        values.put("phonenumber", phoneNumber );
+        long i = dbInsert.insert("Chattracker", null, values);
+        dbInsert.close();
+        if (i != -1) {
+            return true;
+        } else {
+            return false;
+        }
+    }*/
+
+    public List<String> retrieveFriendsFromDb() {
+        String CREATE_CONTACTS_TABLE = "SELECT  * FROM Chattracker";
+
+        List<String> firendsList = new ArrayList<String>();
+        SQLiteDatabase dbl = this.getWritableDatabase();
+        Cursor cursor = dbl.rawQuery(CREATE_CONTACTS_TABLE, null);
+        if (cursor.moveToFirst()) {
+            do {
+                firendsList.add(cursor.getString(0));
+            } while (cursor.moveToNext());
+        }
+        return firendsList;
     }
 
     public boolean insertRecords(MessageHolder messageHolder, String img) {
