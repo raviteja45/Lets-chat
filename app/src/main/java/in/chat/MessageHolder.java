@@ -1,5 +1,7 @@
 package in.chat;
 
+import android.graphics.Bitmap;
+
 /**
  * Created by Ravi on 17-12-2017.
  */
@@ -7,11 +9,31 @@ package in.chat;
 public class MessageHolder {
 
     String owner;
+
+    public boolean isImageAttached() {
+        return isImageAttached;
+    }
+
+    public void setImageAttached(boolean imageAttached) {
+        isImageAttached = imageAttached;
+    }
+
     String message;
     String dateTime;
     String imageUrl;
     String withWhom;
+    Bitmap bitMap;
+    boolean isImageAttached;
 
+
+
+    public Bitmap getBitMap() {
+        return bitMap;
+    }
+
+    public void setBitMap(Bitmap bitMap) {
+        this.bitMap = bitMap;
+    }
     public String getOwner() {
         return owner;
     }

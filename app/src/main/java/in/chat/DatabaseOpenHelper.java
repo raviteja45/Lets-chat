@@ -89,16 +89,21 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
     }*/
 
     public List<String> retrieveFriendsFromDb() {
-        String CREATE_CONTACTS_TABLE = "SELECT  * FROM Chattracker";
 
+        String CREATE_CONTACTS_TABLE = "SELECT  * FROM Chattracker";
         List<String> firendsList = new ArrayList<String>();
         SQLiteDatabase dbl = this.getWritableDatabase();
-        Cursor cursor = dbl.rawQuery(CREATE_CONTACTS_TABLE, null);
-        if (cursor.moveToFirst()) {
-            do {
-                firendsList.add(cursor.getString(0));
-            } while (cursor.moveToNext());
+        String tableName = "Chattracker";
+        Cursor cursor_table_check = dbl.rawQuery("select DISTINCT tbl_name from sqlite_master where tbl_name ='"+tableName+"'", null);
+        if(cursor_table_check!=null&&cursor_table_check.getCount()>0){
+            Cursor cursor = dbl.rawQuery(CREATE_CONTACTS_TABLE, null);
+            if (cursor!=null&&cursor.moveToFirst()) {
+                do {
+                    firendsList.add(cursor.getString(0));
+                } while (cursor.moveToNext());
+            }
         }
+
         return firendsList;
     }
 

@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -51,12 +52,33 @@ public class AdapterHelper extends BaseAdapter {
             view = layoutInflater.inflate(R.layout.adapterhelper, null);
         }
         TextView messageText = (TextView) view.findViewById(R.id.messageText);
+        ImageView imgView = (ImageView)view.findViewById(R.id.image123);
         messageText.setText(message);
         LinearLayout layout = (LinearLayout) view
                 .findViewById(R.id.lineLayout);
         LinearLayout main = (LinearLayout) view
                 .findViewById(R.id.lineLayoutParent);
+        if(message1.getBitMap()!=null){
+            imgView.getLayoutParams().height = 200;
+            imgView.getLayoutParams().width = 200;
+            System.out.println("Value is "+message1.getBitMap().getWidth());
+            imgView.setImageBitmap(message1.getBitMap());
+            imgView.setVisibility(View.VISIBLE);
+        }
+        else{
+            imgView.setVisibility(View.GONE);
+        }
         if (message1.getOwner() != null && message1.getOwner().equalsIgnoreCase("phone")) {
+           /* if(message1.getBitMap()!=null){
+                imgView.getLayoutParams().height = 200;
+                imgView.getLayoutParams().width = 200;
+                System.out.println("Value is "+message1.getBitMap().getWidth());
+                imgView.setImageBitmap(message1.getBitMap());
+                imgView.setVisibility(View.VISIBLE);
+            }
+            else{
+                imgView.setVisibility(View.GONE);
+            }*/
             layout.setBackgroundResource(R.drawable.right);
             main.setGravity(Gravity.RIGHT);
         } else {

@@ -100,7 +100,12 @@ public class Friendsfinderhelper extends BaseAdapter {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
+
                     }
+
+                    /*@Override
+                    public void onErrorResponse(VolleyError error) {
+                    }*/
                 }) {
 
             @Override

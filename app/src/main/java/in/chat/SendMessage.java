@@ -2,15 +2,24 @@ package in.chat;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.PacketListener;
@@ -28,17 +37,19 @@ import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jivesoftware.smackx.filetransfer.FileTransferManager;
-import org.jivesoftware.smackx.filetransfer.OutgoingFileTransfer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import java.io.File;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -77,7 +88,7 @@ public class SendMessage extends Activity implements ConnectionListener {
         send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                sendMessage(typeMessage, userType);
+                sendMessage(typeMessage, userType, null);
             }
         });
 
@@ -157,9 +168,11 @@ public class SendMessage extends Activity implements ConnectionListener {
     }
 
 
-    private void sendMessage(EditText editText, final String userType) {
-
-        String text = editText.getText().toString();
+    private void sendMessage(EditText editText, final String userType, Bitmap bitmap) {
+        String text = "";
+        if (editText != null) {
+            text = editText.getText().toString();
+        }
         Presence presence = new Presence(Presence.Type.available);
         presence.setStatus("Available");
         try {
@@ -172,6 +185,11 @@ public class SendMessage extends Activity implements ConnectionListener {
         bean1.setOwner("phone");
         bean1.setMessage(text);
         bean1.setWithWhom(userType);
+        if (bitmap != null) {
+            bean1.setBitMap(bitmap);
+            bean1.setImageAttached(true);
+        }
+
 
         arrayList.add(bean1);
 
@@ -186,8 +204,10 @@ public class SendMessage extends Activity implements ConnectionListener {
         if (result) {
             Toast.makeText(this, "record inserted", Toast.LENGTH_SHORT).show();
         }
-        editText.setText("");
-        Chat chat = ChatManager.getInstanceFor(connection).createChat(userType + "@192.168.0.19", new ChatMessageListener() {
+        if (editText != null) {
+            editText.setText("");
+        }
+        Chat chat = ChatManager.getInstanceFor(connection).createChat(userType + "@"+Connectionfactory.HOST_NAME, new ChatMessageListener() {
             public void processMessage(Chat chat, Message message) {
 
             }
@@ -202,30 +222,50 @@ public class SendMessage extends Activity implements ConnectionListener {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        final String imageName = userType + "_" + UUID.randomUUID().toString();
         if (requestCode == 2) {
             if (data != null) {
+                final Intent value = data;
                 uri = data.getData();
-                Cursor cursor = null;
                 try {
-                    String[] proj = {MediaStore.Images.Media.DATA};
-                    cursor = this.getContentResolver().query(uri, proj, null, null, null);
-                    int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-                    cursor.moveToFirst();
-                    String url = cursor.getString(column_index);
-                    FileTransferManager manager = FileTransferManager.getInstanceFor(connection);
-                    OutgoingFileTransfer transfer = manager.createOutgoingFileTransfer("" + "/Test");
-                    File file = new File(url);
-                    try {
-                        transfer.sendFile(file, "test_file");
-                    } catch (SmackException e) {
-                        e.printStackTrace();
-                    }
-                } finally {
-                    if (cursor != null) {
-                        cursor.close();
-                    }
-                }
+                    final Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), data.getData());
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                    byte[] imageBytes = baos.toByteArray();
+                    final String imageString = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+                    StringRequest stringRequest = new StringRequest(Request.Method.POST, Connectionfactory.UPLOAD_IMAGE,
+                            new Response.Listener<String>() {
 
+                                @Override
+                                public void onResponse(String response) {
+                                    sendMessage(null, userType, bitmap);
+                                }
+                            }, new Response.ErrorListener() {
+
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+
+                            System.out.println("Error is " + error.getMessage());
+                        }
+                    }) {
+
+                        @Override
+                        protected Map<String, String> getParams() {
+                            Map<String, String> params = new HashMap<String, String>();
+                            params.put("filename", imageName);
+                            params.put("image", imageString);
+                            return params;
+                        }
+
+
+                    };
+
+                    RequestQueue rQueue = Volley.newRequestQueue(this);
+                    stringRequest.setRetryPolicy(new DefaultRetryPolicy(0, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+                    rQueue.add(stringRequest);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
             }
         }
@@ -238,45 +278,8 @@ public class SendMessage extends Activity implements ConnectionListener {
         intent.setType("image/*");
         startActivityForResult(intent, 2);
 
-
-
-       /* OutgoingFileTransfer transfer = manager.createOutgoingFileTransfer(XmppStringUtils.completeJidFrom(userType, "192.168.0.19", "Test"));
-
-        File file = new File(Environment.getExternalStorageDirectory().getPath() + "/letschat");
-        file.mkdir();
-        try {
-            FileWriter fileWriter = new FileWriter(new File(file, "letschat"));
-            fileWriter.append("name is");
-            fileWriter.append("Hello World");
-            fileWriter.flush();
-            fileWriter.close();
-            transfer.sendFile(file, "This is a Test!");
-            if (transfer.isDone()) {
-                System.out.println("IS Done");
-            }
-        } catch (SmackException | IOException e) {
-            e.printStackTrace();
-        }*/
-        // }
-       /* Presence presence = new Presence(Presence.Type.available);
-        presence.setStatus("Available");
-        try {
-            connection.sendStanza(presence);
-        } catch (SmackException.NotConnectedException e) {
-            e.printStackTrace();
-        }
-
-        Chat chat = ChatManager.getInstanceFor(connection).createChat(userType + "@192.168.0.19", new ChatMessageListener() {
-            public void processMessage(Chat chat, Message message) {
-
-            }
-        });
-        try {
-            chat.sendMessage(text);
-        } catch (SmackException.NotConnectedException e) {
-            e.printStackTrace();
-        }*/
     }
+
 
     public void retrieveHistory() {
         DatabaseOpenHelper helper = new DatabaseOpenHelper(this);
@@ -302,8 +305,8 @@ public class SendMessage extends Activity implements ConnectionListener {
                         builder.setSecurityMode(ConnectionConfiguration.SecurityMode.disabled);
                         builder.setUsernameAndPassword(ChatUtil.getFileDetails().split("-")[1], "admin");
                         builder.setSendPresence(true);
-                        builder.setServiceName("192.168.0.19");
-                        builder.setHost("192.168.0.19");
+                        builder.setServiceName(Connectionfactory.HOST_NAME);
+                        builder.setHost(Connectionfactory.HOST_NAME);
                         builder.setResource(ChatUtil.RESOURCE);
                         builder.setDebuggerEnabled(true);
                         Presence presence = new Presence(Presence.Type.available);
